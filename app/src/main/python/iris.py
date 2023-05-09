@@ -27,7 +27,7 @@ def jarvis(text):
                     message = "Opening the fan."
                     break
     if not message:
-        openai.api_key = "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"
+        openai.api_key = "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"
         prompt = (text)
         response = openai.Completion.create(
             engine="text-davinci-003",

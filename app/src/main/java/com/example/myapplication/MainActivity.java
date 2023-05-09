@@ -25,6 +25,8 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import kotlin.jvm.Synchronized;
+
 public class MainActivity extends AppCompatActivity {
     ImageButton speaker_buton;
     private boolean current = false;
@@ -93,37 +95,42 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String sended = editText.getText().toString();
-                list.add(new Modelclass(Modelclass.Layout_two, sended));
-                python python = new python();
-                python2 python2 = new python2();
-                String recieved;
+                try {
+                    String sended = editText.getText().toString();
+                    list.add(new Modelclass(Modelclass.Layout_two, sended));
+                    python python = new python();
+                    python2 python2 = new python2();
+                    String recieved;
 
-                if(current) {
-                    recieved = python.python(sended, MainActivity.this);
-                }
-                else{
-                    recieved = python2.python2(sended, MainActivity.this);
-                }
-                recieved = recieved.trim();
-                if(recieved.equals("-1")){
-                    Intent intent = new Intent(MainActivity.this,MainActivity4.class);
-                    startActivity(intent);
-                }
-                else{
-                    list.add(new Modelclass(Modelclass.Layout_One, recieved));
-                    MainHelper db = new MainHelper(MainActivity.this);
-                    String id = String.valueOf((Integer.valueOf((int) (Math.random()*99999999))));
-                    boolean worked = db.insertData(id,sended,recieved);
-                }
-                synchronized (recieved) {
-                    tts.speak(recieved, TextToSpeech.QUEUE_FLUSH, null);
-                }
+                    if (current) {
+                        recieved = python.python(sended, MainActivity.this);
+                    } else {
+                        firebase firebase = new firebase();
+
+                        recieved = python2.python2(sended,signin.reg_no, MainActivity.this);
+                    }
+                    recieved = recieved.trim();
+                    if (recieved.equals("-1")) {
+                        Intent intent = new Intent(MainActivity.this, MainActivity4.class);
+                        startActivity(intent);
+                    } else {
+                        list.add(new Modelclass(Modelclass.Layout_One, recieved));
+                        MainHelper db = new MainHelper(MainActivity.this);
+                        String id = String.valueOf((Integer.valueOf((int) (Math.random() * 99999999))));
+                        boolean worked = db.insertData(id, sended, recieved);
+                    }
+                    synchronized (recieved) {
+                        tts.speak(recieved, TextToSpeech.QUEUE_FLUSH, null);
+                    }
 
 
-                adaptor.notifyDataSetChanged();
+                    adaptor.notifyDataSetChanged();
+                }
+                catch (Exception e){
+                    Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+                }
+                }
 
-            }
         });
         speaker_buton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,42 +150,49 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode,int resultCode,Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK && data != null) {
-            switch (requestCode) {
-                case 10:
-                    ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    python python = new python();
-                    python2 python2 = new python2();
-                    String a;
-                    if(current) {
-                        a = python.python(result.get(0), MainActivity.this);
-                    }
-                    else{
-                        a = python2.python2(result.get(0), MainActivity.this);
-                    }
-                    a = a.trim();
-                    if(a.equals("-1")){
-                        Intent intent = new Intent(MainActivity.this,MainActivity4.class);
-                        startActivity(intent);
-                        return;
-                    }
-                    String id = String.valueOf((Integer.valueOf((int) (Math.random()*99999999))));
-                    Toast.makeText(this, id, Toast.LENGTH_SHORT).show();
-                    if(!a.equals("-1")){
-                        synchronized (a) {
-                            tts.speak(a, TextToSpeech.QUEUE_FLUSH, null);
+            try {
+                switch (requestCode) {
+
+                    case 10:
+                        ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                        python python = new python();
+                        python2 python2 = new python2();
+                        String a;
+                        if (current) {
+                            a = python.python(result.get(0), MainActivity.this);
+                        } else {
+                            a = python2.python2(result.get(0),signin.reg_no, MainActivity.this);
                         }
-                    }
-                    list.add(new Modelclass(Modelclass.Layout_One, result.get(0)));
-                    list.add(new Modelclass(Modelclass.Layout_two, a));
-                    MainHelper db = new MainHelper(this);
-                    boolean worked = db.insertData(id,result.get(0),a);
-                    adaptor.notifyDataSetChanged();
-                    break;
+                        a = a.trim();
+                        if (a.equals("-1")) {
+                            Intent intent = new Intent(MainActivity.this, MainActivity4.class);
+                            startActivity(intent);
+                            return;
+                        }
+                        String id = String.valueOf((Integer.valueOf((int) (Math.random() * 99999999))));
+                        Toast.makeText(this, id, Toast.LENGTH_SHORT).show();
+                        if (!a.equals("-1")) {
+                            synchronized (a) {
+                                tts.speak(a, TextToSpeech.QUEUE_FLUSH, null);
+                            }
+                        }
+                        list.add(new Modelclass(Modelclass.Layout_One, result.get(0)));
+                        list.add(new Modelclass(Modelclass.Layout_two, a));
+                        MainHelper db = new MainHelper(this);
+                        boolean worked = db.insertData(id, result.get(0), a);
+                        adaptor.notifyDataSetChanged();
+                        break;
+                }
+
             }
+            catch (Exception e){
+                Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_SHORT).show();
+            }
+        }
         }
     }
 
-}
+
 
 
 

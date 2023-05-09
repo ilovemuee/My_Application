@@ -18,7 +18,7 @@ public class signin extends AppCompatActivity {
     private EditText usernameEditText;
     private EditText passwordEditText;
     private Button loginButton;
-
+    public static String reg_no;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,6 +37,7 @@ public class signin extends AppCompatActivity {
                             String a = arrayList.get(2);
                             String b = arrayList.get(3);
                             if (password.equals(a) && username.equals(b)) {
+                                reg_no = b;
                                 Intent intent = new Intent(signin.this, MainActivity.class);
                                 startActivity(intent);
                             }
